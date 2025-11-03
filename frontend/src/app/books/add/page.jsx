@@ -1,25 +1,30 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import api from '../../../utils/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function AddEditBook() {
+function AddEditBookForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const bookId = searchParams.get('id'); // if editing, id will be present
+  const bookId = searchParams.get('id');
 
-  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm();
   const [loading, setLoading] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm();
 
   useEffect(() => {
     if (bookId) {
       setIsEdit(true);
       fetchBook();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookId]);
 
   const fetchBook = async () => {
@@ -27,18 +32,19 @@ export default function AddEditBook() {
       setLoading(true);
       const res = await api.get(`/books/${bookId}`);
       const book = res.data.book;
-      // populate form
+
+      // Pre-fill the form with existing data
       setValue('title', book.title);
       setValue('authors', book.authors);
       setValue('publisher', book.publisher || '');
       setValue('isbn', book.isbn || '');
       setValue('isbn13', book.isbn13 || '');
-      setValue('numPages', book.numPages || 0);
-      setValue('stock', book.stock || 1);
-      setValue('rentPerDay', book.rentPerDay || 10);
-    } catch (err) {
-      console.error('Fetch book error', err);
-      alert('Failed to load book');
+      setValue('numPages', book.numPages || '');
+      setValue('stock', book.stock);
+      setValue('rentPerDay', book.rentPerDay);
+    } catch (error) {
+      console.error('Error fetching book:', error);
+      alert('Failed to load book data');
     } finally {
       setLoading(false);
     }
@@ -47,112 +53,142 @@ export default function AddEditBook() {
   const onSubmit = async (data) => {
     try {
       setLoading(true);
+
       if (isEdit) {
+        // Update existing book
         await api.put(`/books/${bookId}`, data);
         alert('Book updated successfully!');
       } else {
+        // Create new book
         await api.post('/books', data);
         alert('Book added successfully!');
       }
+
       router.push('/books');
-    } catch (err) {
-      console.error('Submit error', err);
-      alert('Failed to save book');
+    } catch (error) {
+      console.error('Error saving book:', error);
+      alert(error.response?.data?.message || 'Failed to save book');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold mb-4">{isEdit ? 'Edit Book' : 'Add Book'}</h1>
+    <div className="p-6 max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">
+        {isEdit ? 'Edit Book' : 'Add New Book'}
+      </h1>
 
-      {loading && <p>Loading...</p>}
-
-      {!loading && (
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      {loading && !isEdit ? (
+        <p>Loading...</p>
+      ) : (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-white p-6 rounded shadow">
+          {/* Title */}
           <div>
-            <label className="block mb-1 font-medium">Title</label>
+            <label className="block font-semibold mb-1 text-black">
+              Title <span className="text-red-600">*</span>
+            </label>
             <input
-              type="text"
               {...register('title', { required: 'Title is required' })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border px-3 py-2 rounded text-gray-900"
             />
-            {errors.title && <p className="text-red-600 text-sm">{errors.title.message}</p>}
+            {errors.title && (
+              <p className="text-red-600 text-sm">{errors.title.message}</p>
+            )}
           </div>
 
+          {/* Authors */}
           <div>
-            <label className="block mb-1 font-medium">Authors</label>
+            <label className="block font-semibold mb-1 text-black">
+              Authors <span className="text-red-600">*</span>
+            </label>
             <input
-              type="text"
               {...register('authors', { required: 'Authors are required' })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border px-3 py-2 rounded text-gray-900"
             />
-            {errors.authors && <p className="text-red-600 text-sm">{errors.authors.message}</p>}
+            {errors.authors && (
+              <p className="text-red-600 text-sm">{errors.authors.message}</p>
+            )}
           </div>
 
+          {/* Publisher */}
           <div>
-            <label className="block mb-1 font-medium">Publisher</label>
+            <label className="block font-semibold mb-1 text-black">Publisher</label>
             <input
-              type="text"
               {...register('publisher')}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border px-3 py-2 rounded text-gray-900"
             />
           </div>
 
+          {/* ISBN */}
           <div>
-            <label className="block mb-1 font-medium">ISBN</label>
+            <label className="block font-semibold mb-1 text-black">ISBN</label>
             <input
-              type="text"
               {...register('isbn')}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border px-3 py-2 rounded text-gray-900"
             />
           </div>
 
+          {/* ISBN13 */}
           <div>
-            <label className="block mb-1 font-medium">ISBN13</label>
+            <label className="block font-semibold mb-1 text-black">ISBN13</label>
             <input
-              type="text"
               {...register('isbn13')}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border px-3 py-2 rounded text-gray-900"
             />
           </div>
 
+          {/* Number of Pages */}
           <div>
-            <label className="block mb-1 font-medium">Number of Pages</label>
+            <label className="block font-semibold mb-1 text-black">Number of Pages</label>
             <input
               type="number"
-              {...register('numPages', { min: { value: 0, message: 'Cannot be negative' } })}
-              className="w-full border rounded px-3 py-2"
+              {...register('numPages', { min: 0 })}
+              className="w-full border px-3 py-2 rounded text-gray-900"
             />
-            {errors.numPages && <p className="text-red-600 text-sm">{errors.numPages.message}</p>}
+            {errors.numPages && (
+              <p className="text-red-600 text-sm">Must be 0 or greater</p>
+            )}
           </div>
 
+          {/* Stock */}
           <div>
-            <label className="block mb-1 font-medium">Stock</label>
+            <label className="block font-semibold mb-1 text-black">
+              Stock <span className="text-red-600">*</span>
+            </label>
             <input
               type="number"
-              {...register('stock', { required: true, min: 0 })}
-              className="w-full border rounded px-3 py-2"
+              {...register('stock', { required: 'Stock is required', min: 0 })}
+              className="w-full border px-3 py-2 rounded text-gray-900"
             />
+            {errors.stock && (
+              <p className="text-red-600 text-sm">{errors.stock.message}</p>
+            )}
           </div>
 
+          {/* Rent per Day */}
           <div>
-            <label className="block mb-1 font-medium">Rent per Day (₹)</label>
+            <label className="block font-semibold mb-1 text-black">
+              Rent per Day (₹) <span className="text-red-600">*</span>
+            </label>
             <input
               type="number"
-              {...register('rentPerDay', { required: true, min: 0 })}
-              className="w-full border rounded px-3 py-2"
+              {...register('rentPerDay', { required: 'Rent per day is required', min: 0 })}
+              className="w-full border px-3 py-2 rounded text-gray-900"
             />
+            {errors.rentPerDay && (
+              <p className="text-red-600 text-sm">{errors.rentPerDay.message}</p>
+            )}
           </div>
 
-          <div className="flex gap-3 mt-2">
+          {/* Buttons */}
+          <div className="flex gap-3 pt-2">
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-gray-400"
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Saving...' : (isEdit ? 'Update Book' : 'Add Book')}
+              {loading ? 'Saving...' : isEdit ? 'Update Book' : 'Add Book'}
             </button>
             <button
               type="button"
@@ -165,5 +201,13 @@ export default function AddEditBook() {
         </form>
       )}
     </div>
+  );
+}
+
+export default function AddEditBook() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading...</div>}>
+      <AddEditBookForm />
+    </Suspense>
   );
 }
