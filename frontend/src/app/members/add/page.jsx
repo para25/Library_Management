@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '../../../utils/api';
 
-export default function AddMember() {
+function AddMemberForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const memberId = searchParams.get('id');
@@ -122,5 +122,13 @@ export default function AddMember() {
         </form>
       )}
     </div>
+  );
+}
+
+export default function AddMember() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading...</div>}>
+      <AddMemberForm />
+    </Suspense>
   );
 }
