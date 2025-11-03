@@ -2,6 +2,11 @@
 
 A comprehensive full-stack library management application built with **Node.js**, **Express**, **MongoDB**, and **Next.js**. This system allows librarians to efficiently manage books, members, and transactions with features like automated rent calculation, debt tracking, and bulk book imports from external APIs.
 
+## 🌐 Live Demo
+
+- **Frontend**: [https://library-management-7a2y.vercel.app/](https://library-management-7a2y.vercel.app/)
+- **Backend API**: [https://library-management-p3sy.onrender.com/](https://library-management-p3sy.onrender.com/)
+
 ## ✨ Features
 
 ### 📖 Books Management

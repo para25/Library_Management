@@ -4,7 +4,13 @@ const cors = require('cors');
 require('dotenv').config();
 const connectDB = require('./config/db.js');
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'https://library-management-7a2y.vercel.app'
+    ],
+    credentials: true
+}));
 app.use(express.json());
 
 connectDB();
