@@ -5,7 +5,7 @@ A comprehensive full-stack library management application built with **Node.js**
 ## 🌐 Live Demo
 
 - **Frontend**: [https://library-management-7a2y.vercel.app/](https://library-management-7a2y.vercel.app/)
-- **Backend API**: [https://library-management-p3sy.onrender.com/](https://library-management-p3sy.onrender.com/)
+
 
 ## ✨ Features
 
